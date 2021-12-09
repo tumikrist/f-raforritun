@@ -26,8 +26,7 @@ SCREEN_TITLE = "Tumi leikur"
 
 MOVEMENT_SPEED = 5
 laser_speed=5
-
-
+number_wall = 7
 
 class Player(arcade.Sprite):
 
@@ -37,6 +36,7 @@ class Player(arcade.Sprite):
         # Remove these lines if physics engine is moving player.
         self.center_x += self.change_x
         self.center_y += self.change_y
+
 
         # Check for out-of-bounds
         if self.left < 0:
@@ -76,7 +76,7 @@ class MyGame(arcade.Window):
         #self.bobspirte=None
 
         #makewalls
-        self.number_wall = 30
+        #self.number_wall = 3
         self.wall_pos=[]
 
 
@@ -129,6 +129,7 @@ class MyGame(arcade.Window):
         self.player_sprite.center_y = 50
         self.player_list.append(self.player_sprite)
         #player x og y pos
+
         self.pos_player_X=0
         self.pos_player_Y=0
 
@@ -141,6 +142,9 @@ class MyGame(arcade.Window):
         #timi
         self.timi=0
         self.timi_heild=0
+        self.timi_local=0
+
+        self.movecnt = 0
 
         #unlock wepon 2 code
         self.unlock2=False
@@ -152,8 +156,20 @@ class MyGame(arcade.Window):
         self.shot_x = 0
         self.shot_y = 0
 
+
+        self.random_speedlist = []
+        for x in range(number_wall):
+            temp2 = []
+            self.box_x_speed = 0
+            self.box_y_speed = 0
+            temp2.extend((self.box_x_speed,self.box_y_speed))
+            self.random_speedlist.append(temp2)
+        print(self.random_speedlist)
+        print(self.random_speedlist[0][1])
+
+
         #byr til x marga kassa
-        for x in range(self.number_wall):
+        for x in range(number_wall):
             temp=[]
             wall = Player("RTS_Crate.png", playerscale)
             wall.center_x = random.randint(100,2800)
@@ -176,11 +192,13 @@ class MyGame(arcade.Window):
                            break
 
             self.wall_list.append(wall)
-            for wall in self.wall_list:
-                print("x",wall.center_x,"y",wall.center_y)
 
-        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.baby_list)
+        self.wall=self.wall_list[0]
+        print(self.wall_list[1-1])
+
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
+        for x in range(7):
+            self.box_onbox= arcade.PhysicsEngineSimple(self.wall_list[x-1], self.wall_list)
 
 
     def on_draw(self):
@@ -228,6 +246,43 @@ class MyGame(arcade.Window):
     def on_update(self, delta_time):
         """ Movement and game logic """
         self.physics_engine.update()
+        self.box_onbox.update()
+
+
+        self.timi_heild += 1
+
+        self.timi = self.timi_heild / 60
+
+        #start box test
+
+
+        for x in range(len(self.wall_list)):
+            self.timi_local+=1
+
+
+            if self.timi_local==180:
+                self.random_speedlist[x][0]= random.randint(-2, 2)
+                self.random_speedlist[x][1] = random.randint(-2, 2)
+
+                self.timi_local = 0
+
+            if self.timi_local!=0:
+                self.wall_list[x].center_x += self.random_speedlist[x][0]
+                self.wall_list[x].center_y += self.random_speedlist[x][1]
+
+            if self.wall_list[x].center_x< 0+40:
+               self.wall_list[x].center_x = 0+40
+            if self.wall_list[x].center_x> 3000 - 40:
+               self.wall_list[x].center_x = 3000 - 40
+            #
+            if self.wall_list[x].center_y< 0+40:
+                self.wall_list[x].center_y= 0+40
+            if self.wall_list[x].center_y> 3000 - 40:
+                self.wall_list[x].center_y= 3000 - 40
+
+        #end box test
+
+
 
         self.timi_heild+=1
         self.timi=self.timi_heild/60
